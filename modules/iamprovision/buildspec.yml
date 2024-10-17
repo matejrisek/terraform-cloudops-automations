@@ -1,0 +1,45 @@
+version: 0.2
+env:
+  variables:
+    APP: "lead management"
+    TERRAFORM_VERSION: "1.7.4"
+    TFLINT_VERSION: "0.50.3"
+    TERRASCAN_VERSION: "1.19.1"
+    TF_COMMAND: "apply"
+phases:
+  install:
+    runtime-versions:
+      python: 3.11
+    on-failure: ABORT
+    commands:
+      - tf_version=$TERRAFORM_VERSION
+      - cd /usr/local/bin
+      - wget https://releases.hashicorp.com/terraform/"$TERRAFORM_VERSION"/terraform_"$TERRAFORM_VERSION"_linux_amd64.zip
+      - unzip -o terraform_"$TERRAFORM_VERSION"_linux_amd64.zip
+      - wget https://github.com/terraform-linters/tflint/releases/download/v"$TFLINT_VERSION"/tflint_linux_amd64.zip
+      - unzip -o tflint_linux_amd64.zip
+      - wget https://github.com/accurics/terrascan/releases/download/v"$TERRASCAN_VERSION"/terrascan_"$TERRASCAN_VERSION"_Linux_x86_64.tar.gz
+      - tar -xf terrascan_"$TERRASCAN_VERSION"_Linux_x86_64.tar.gz terrascan
+  pre_build:
+    on-failure: ABORT
+    commands:
+      - echo trak "$APP" terraform "$ENV" execution started on `date`
+  build:
+    on-failure: ABORT
+    commands:
+      - cd "$CODEBUILD_SRC_DIR"
+      - ls -lrt "$CODEBUILD_SRC_DIR"
+      - terraform --version
+      #- terraform init -input=false --backend-config=dev.config
+      - terraform init -input=false --backend-config=dev.config -backend-config="key=terraform/bimove/terraform.tfstate" -backend-config="bucket=us.com.syngenta.seedrdit-cloudops-sb-nonprod" -backend-config="profile=sbx"
+      - terraform validate
+      - tflint --init
+      - tflint
+      - terrascan init
+      - terrascan scan -i terraform --non-recursive
+      - terraform plan '-lock=false' '-input=false' '-var-file=dev.tfvars.bak'
+      - terraform apply '-input=false' -auto-approve
+  post_build:
+    on-failure: CONTINUE
+    commands:
+      - echo trak "$APP" terraform "$ENV" execution completed on `date`
