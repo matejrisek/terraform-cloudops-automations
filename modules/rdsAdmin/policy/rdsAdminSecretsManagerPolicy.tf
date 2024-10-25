@@ -11,14 +11,7 @@ resource "aws_iam_policy" "SecretsManagerPolicy" {
       {
         Sid = "UniversalAllowSecretManager"
         Action = [
-          "secretsmanager:GetResourcePolicy",
-          "secretsmanager:UntagResource",
-          "secretsmanager:GetSecretValue",
-          "secretsmanager:DescribeSecret",
-          "secretsmanager:CreateSecret",
-          "secretsmanager:ListSecretVersionIds",
-          "secretsmanager:TagResource",
-          "secretsmanager:UpdateSecret"
+          "secretsmanager:*"
         ]
         Effect   = "Allow"
         Resource =[

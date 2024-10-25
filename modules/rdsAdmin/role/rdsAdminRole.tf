@@ -1,6 +1,6 @@
 resource "aws_iam_role" "rdsadmin_role" {
   name =  "rds_admin"
-  description = "rds_admin"
+  description = "Provides Admin Access to RDS Resources"
   # Terraform",s "jsonencode" function converts a
   # Terraform expression result to valid JSON syntax.
   assume_role_policy = jsonencode({
@@ -22,13 +22,17 @@ resource "aws_iam_role" "rdsadmin_role" {
   })
 
   tags = {
-    Name = "rds_admin"
+    BusinessFunction = "Seeds R+D"
   }
 }
 
 resource "aws_iam_role_policy_attachment" "rdsadmin_role_RDSFullAccess_policy_attachment" {
   role       = aws_iam_role.rdsadmin_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonRDSFullAccess"
+}
+resource "aws_iam_role_policy_attachment" "rdsadmin_role_AWSSuppoetAccess_policy_attachment" {
+  role       = aws_iam_role.rdsadmin_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSSupportAccess"
 }
 
 resource "aws_iam_role_policy_attachment" "rdsadmin_role_ReadOnlyAccess_policy_attachment" {
